@@ -13,10 +13,19 @@ body {
 }
 
 .container {
-    text-align: center;
     font-size: 1.3rem;
     font-weight: 500;
     width: 100vw;
     height: 700px;
     border: 1px solid red;
+    padding: 0px 20px 0px 0px;
+}
+
+#title {
+    text-align: center;
+}
+
+svg {
+    margin-left: 50px;
+    border: 1px solid blue;
 }
