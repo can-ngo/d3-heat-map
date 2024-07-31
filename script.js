@@ -1,5 +1,3 @@
-
-
 const url ='https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json'
 
 //SVG basic dimensions
@@ -27,22 +25,16 @@ fetch(url)
         // console.log(data.monthlyVariance[0].year)
 
         const monthsDate = data.monthlyVariance.map(item => monthToDate(item.month));
-        const monthMax = d3.max(monthsDate);
-              monthMax.setDate(monthMax.getDate()+15);      
-        const monthMin = d3.min(monthsDate);
-              monthMin.setDate(monthMin.getDate()-15)
+        const monthDomain = [1,2,3,4,5,6,7,8,9,10,11,12].map(item=>monthToDate(item));
         
-        console.log(d3.extent(monthsDate));
-
-        console.log(monthMax);
-
         const years = data.monthlyVariance.map(item => item.year);
         
 
         //Scaling x settings
-        const xScale = d3.scaleLinear().domain([d3.min(years),d3.max(years)])
-                                       .range([0,width]);
-        
+        const xScale = d3.scaleLinear()
+                         .domain([d3.min(years),d3.max(years)])
+                         .range([0,width]);
+   
         const xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d')).ticks(20,'s');
 
         //Draw x axis
@@ -59,11 +51,11 @@ fetch(url)
            .text('Years')
            .style('font-size','0.8rem')
 
-        //Scaling y settings
-        const yScale = d3.scaleTime().domain([monthMin,monthMax])
-                                     .range([0,height-marginBottom-marginTop]);
-                                     
-        const yAxis = d3.axisLeft(yScale).tickFormat(timeFormat).tickPadding(3);
+         const yScale = d3.scaleBand()
+            .domain(monthDomain)
+            .range([0,height-marginBottom-marginTop]);
+
+        const yAxis = d3.axisLeft(yScale).tickFormat(timeFormat);
         
         //Draw y axis
         svg.append('g')
