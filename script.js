@@ -13,14 +13,12 @@ const marginBottom = 50;
 const svg = d3.select('.container')
               .append('svg')
               .attr('width', width + 100)
-              .attr('height', height)
+              .attr('height', height + 100)
 
 //Function that convert month number format to Date object
 const monthToDate = month => new Date(1970,month-1,1);
 
 const timeFormat = d3.timeFormat('%B');
-
-
 
 fetch(url)
     .then(res => res.json())
@@ -55,7 +53,7 @@ fetch(url)
 
         //Add x legend
         svg.append('text')
-           .attr('x', width - 30)
+           .attr('x', width)
            .attr('y', height - 10)
            .attr('id','x-legend')
            .text('Years')
@@ -79,4 +77,6 @@ fetch(url)
            .attr('y', marginTop - 10)
            .text('Months')
            .style('font-size','0.8rem')
-    })
+    
+           
+    }).catch(err => console.log(err));
