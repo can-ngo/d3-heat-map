@@ -267,7 +267,7 @@ fetch(url)
             .attr('transform',`translate(0,${legendHeight})`)
       
       //Tooltip
-      const tooltip = d3.select('body')
+      const tooltip = d3.select('.container')
                         .append('div')
                         .attr('id','tooltip')
                         .style('opacity',0);                        
@@ -309,9 +309,17 @@ fetch(url)
               )
               tooltip.style('left', event.pageX + 10 + 'px')
               tooltip.style('top', event.pageY - 60 + 'px')
-              
+              // Change stroke to black
+              // d3.select(this)
+              //   .style('stroke','black')
+              //   .style('stroke-width', '2px')
             })
             .on('mouseout', () => {
               tooltip.style('opacity', 0);
+              //Reset stroke
+              // d3.select(this)
+              //   .style('stroke','none')
+              //   .style('stroke-width','0px')
             })
+
     }).catch(err => console.log(err));

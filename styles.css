@@ -27,7 +27,6 @@ body {
 
 svg {
     margin-left: 50px;
-    border: 1px solid blue;
 }
 
 #tooltip {
@@ -40,9 +39,4 @@ svg {
     border-radius: 5px;
     padding-left: 5px;
     pointer-events: none;
-}
-
-.cell:hover {
-    pointer-events: none;
-    border-color: black;
 }
