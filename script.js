@@ -125,18 +125,10 @@ const colorbrewer = {
    }
  };
 
-//SVG basic dimensions
-const width = 1200;
-const height = 550;
+
 const marginLeft = 60;
 const marginTop = 60;
 const marginBottom = 50;
-
-//Create SVG container
-const svg = d3.select('.container')
-              .append('svg')
-              .attr('width', width + 100)
-              .attr('height', height + 100)
 
 //Function that convert month number format to Date object
 const monthToDate = month => new Date(1970,month-1,1);
@@ -144,56 +136,78 @@ const monthToDate = month => new Date(1970,month-1,1);
 const timeFormat = d3.timeFormat('%B');
 
 fetch(url)
-    .then(res => res.json())
-    .then(data => {
-        // console.log(data.monthlyVariance[0].month)
-        // console.log(data.monthlyVariance[0].year)
-
-        const monthsDate = data.monthlyVariance.map(item => monthToDate(item.month));
-        const monthDomain = [1,2,3,4,5,6,7,8,9,10,11,12].map(item=>monthToDate(item));
-        
-        const years = data.monthlyVariance.map(item => item.year);
-        
-
-        //Scaling x settings
-        const xScale = d3.scaleLinear()
-                         .domain([d3.min(years),d3.max(years)])
-                         .range([0,width]);
+   .then(res => res.json())
+   .then(data => {
+     
+      //width of each cells
+      const width = 5 * Math.ceil(data.monthlyVariance.length / 12); //Old: 1200;
+      //height of each cell
+      const height = 33 * 12; //Old: 550;
+     
+      const monthDomain = [1,2,3,4,5,6,7,8,9,10,11,12].map(item=>monthToDate(item));
+     
+      const years = data.monthlyVariance.map(item => item.year);
    
-        const xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d')).ticks(20,'s');
+      const description = d3.select('.container')
+                        .append('h5')
+                        .style('text-align','center')
+                        .attr('id','description')
+                        .html(
+                           `${data.monthlyVariance[0].year} - 
+                           ${data.monthlyVariance[data.monthlyVariance.length-1].year}:
+                            base temperature ${data.baseTemperature}&#8451`
+                        );
 
-        //Draw x axis
-        svg.append('g')
-           .call(xAxis)
-           .attr('id','x-axis')
-           .attr('transform',`translate(${marginLeft},${height-marginBottom})`)
+     //Create SVG container
+      const svg = d3.select('.container')
+                    .append('svg')
+                    .attr('width', width + 100)
+                    .attr('height', height + 100)
 
-        //Add x legend
-        svg.append('text')
-           .attr('x', width)
-           .attr('y', height - 10)
-           .attr('id','x-legend')
-           .text('Years')
-           .style('font-size','0.8rem')
+      //Scaling x settings
+      const xScale = d3.scaleLinear()
+                       .domain([d3.min(years),d3.max(years)])
+                       .range([0,width]);
 
-         const yScale = d3.scaleBand()
-            .domain(monthDomain)
-            .range([0,height-marginBottom-marginTop]);
+      const xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d')).ticks(20,'s');
+      
+      //Draw x axis
+      svg.append('g')
+         .call(xAxis)
+         .attr('id','x-axis')
+         .attr('transform',`translate(${marginLeft},${height-marginBottom})`)
+      
+      //Add x legend
+      svg.append('text')
+         .attr('x', width)
+         .attr('y', height - 10)
+         .attr('id','x-legend')
+         .text('Years')
+         .style('font-size','0.8rem')
+      
+      //Scaling y settings
+      const yScale = d3.scaleBand()
+                        .domain(monthDomain)
+                        .range([0,height-marginBottom-marginTop]);
 
-        const yAxis = d3.axisLeft(yScale).tickFormat(timeFormat);
-        
-        //Draw y axis
-        svg.append('g')
-           .call(yAxis)
-           .attr('id','y-axis')
-           .attr('transform',`translate(${marginLeft},${marginTop})`)
-        
-        //Add y legend
-        svg.append('text')
-           .attr('x', marginLeft - 20)
-           .attr('y', marginTop - 10)
-           .text('Months')
-           .style('font-size','0.8rem')
-    
+      const yAxis = d3.axisLeft(yScale).tickFormat(timeFormat);
+      
+      //Draw y axis
+      svg.append('g')
+         .call(yAxis)
+         .attr('id','y-axis')
+         .attr('transform',`translate(${marginLeft},${marginTop})`)
+      
+      //Add y legend
+      svg.append('text')
+         .attr('x', marginLeft - 20)
+         .attr('y', marginTop - 10)
+         .text('Months')
+         .style('font-size','0.8rem')
+
+      //Legend
+      const legendColors = colorbrewer.RdYlBu[11].reverse();
+      const legendWidth = 400;
+      const legendHeight = 300 / legendColors.length;
            
     }).catch(err => console.log(err));
