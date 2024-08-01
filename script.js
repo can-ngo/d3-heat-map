@@ -114,11 +114,6 @@ const marginLeft = 60;
 const marginTop = 60;
 const marginBottom = 50;
 
-//Function that convert month number format to Date object
-const monthToDate = month => new Date(1970,month-1,1);
-
-const timeFormat = d3.timeFormat('%B');
-
 fetch(url)
    .then(res => res.json())
    .then(data => {
@@ -127,8 +122,6 @@ fetch(url)
       const width = 5 * Math.ceil(data.monthlyVariance.length / 12); //Old: 1200;
       //height of each cell
       const height = 33 * 12; //Old: 550;
-     
-      const monthDomain = [1,2,3,4,5,6,7,8,9,10,11,12].map(item=>monthToDate(item));
      
       const years = data.monthlyVariance.map(item => item.year);
    
@@ -145,16 +138,25 @@ fetch(url)
      //Create SVG container
       const svg = d3.select('.container')
                     .append('svg')
-                    .attr('width', width + 100)
+                    .attr('width', width + 150)
                     .attr('height', height + 100)
 
       //Scaling x settings
-      const xScale = d3.scaleLinear()
-                       .domain([d3.min(years),d3.max(years)])
-                       .range([0,width]);
+      const xScale = d3.scaleBand()
+                       .domain(data.monthlyVariance.map( val => val.year))
+                       .range([0,width])
+                       .padding(0);
 
-      const xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d')).ticks(20,'s');
-      
+      const xAxis = d3.axisBottom(xScale)
+                      .tickValues(
+                        xScale.domain().filter( year => year % 10 === 0)
+                      )
+                      .tickFormat( year => {
+                        const date = new Date(0);
+                        date.setUTCFullYear(year);
+                        return d3.utcFormat('%Y')(date)
+                      })
+                      .tickSize(10, 1)
       //Draw x axis
       svg.append('g')
          .call(xAxis)
@@ -171,10 +173,16 @@ fetch(url)
       
       //Scaling y settings
       const yScale = d3.scaleBand()
-                        .domain(monthDomain)
+                        .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
                         .range([0,height-marginBottom-marginTop]);
 
-      const yAxis = d3.axisLeft(yScale).tickFormat(timeFormat);
+      const yAxis = d3.axisLeft(yScale)
+                      .tickValues(yScale.domain())
+                      .tickFormat( month => {
+                        const date = new Date(0);
+                        date.setUTCMonth(month);
+                        return d3.utcFormat('%B')(date);
+                      });
       
       //Draw y axis
       svg.append('g')
@@ -257,5 +265,53 @@ fetch(url)
             .append('g')
             .call(legendXAxis)
             .attr('transform',`translate(0,${legendHeight})`)
-
+      
+      //Tooltip
+      const tooltip = d3.select('body')
+                        .append('div')
+                        .attr('id','tooltip')
+                        .style('opacity',0);                        
+      
+      //Heat Map
+      svg
+            .append('g')
+            .classed('map', true)
+            .attr('transform', `translate(${marginLeft},${marginTop})`)
+            .selectAll('rect')
+            .data(data.monthlyVariance)
+            .enter()
+            .append('rect')
+            .attr('class','cell')
+            .attr('data-month', d => d.month)
+            .attr('data-year', d => d.year)
+            .attr('data-temp', d => d.baseTemperature + d.variance)
+            .attr('x', d => xScale(d.year))
+            .attr('y', d => yScale(d.month))
+            .attr('width', d => xScale.bandwidth(d.year))
+            .attr('height', d => yScale.bandwidth(d.month))
+            .attr('fill', d => legendThreshold(data.baseTemperature + d.variance))
+            .on('mouseover', (event, d) => {
+              tooltip.style('opacity', 0.9);
+              tooltip.attr('data-month', d.month)
+              tooltip.attr('data-year', d.year)
+              const date = new Date(d.year, d.month)
+              tooltip.html(
+                `<span class='date'>
+                  ${d3.utcFormat('%Y - %B')(date)}
+                 </span><br/>
+                 <span class='temperature'>
+                  ${d3.format('.1f')(data.baseTemperature + d.variance)}
+                  &#8451
+                 </span><br/>
+                 <span class='variance'>
+                  ${d3.format('+.1f')(d.variance)}&#8451
+                 </span>`
+              )
+              tooltip.style('left', event.pageX + 10 + 'px')
+              tooltip.style('top', event.pageY - 60 + 'px')
+              
+            })
+            .on('mouseout', () => {
+              tooltip.style('opacity', 0);
+            })
     }).catch(err => console.log(err));

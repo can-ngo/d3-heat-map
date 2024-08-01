@@ -29,3 +29,20 @@ svg {
     margin-left: 50px;
     border: 1px solid blue;
 }
+
+#tooltip {
+    position: absolute;
+    width: 100px;
+    height: fit-content;
+    background-color: black;
+    color: white;
+    font-size: 0.8rem;
+    border-radius: 5px;
+    padding-left: 5px;
+    pointer-events: none;
+}
+
+.cell:hover {
+    pointer-events: none;
+    border-color: black;
+}
