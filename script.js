@@ -270,10 +270,6 @@ fetch(url)
                         .append('div')
                         .attr('id','tooltip')
                         .style('opacity',0);
-      const overlay = d3.select('.container')
-                        .append('div')
-                        .attr('class','overlay')
-                        .style('opacity',0)
      
       //Heat Map
       svg
@@ -285,7 +281,6 @@ fetch(url)
             .enter()
             .append('rect')
             .attr('class','cell')
-            .attr('index', (d,i) => i)
             .attr('data-month', d => d.month)
             .attr('data-year', d => d.year)
             .attr('data-temp', d => d.baseTemperature + d.variance)
@@ -295,7 +290,6 @@ fetch(url)
             .attr('height', d => yScale.bandwidth(d.month))
             .attr('fill', d => legendThreshold(data.baseTemperature + d.variance))
             .on('mouseover', (event, d) => {
-              const i = event.currentTarget.style;
               tooltip.style('opacity', 0.9);
               tooltip.attr('data-month', d.month)
               tooltip.attr('data-year', d.year)
@@ -326,7 +320,6 @@ fetch(url)
               d3.select(event.currentTarget)
                 .style('stroke','none')
                 .style('stroke-width','0px')
-              overlay.style('opacity',0);
             })
 
     }).catch(err => console.log(err));
