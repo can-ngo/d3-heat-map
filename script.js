@@ -1,3 +1,4 @@
+
 const url ='https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json'
 
 const colorbrewer = {
@@ -6,25 +7,8 @@ const colorbrewer = {
      4: ['#d7191c', '#fdae61', '#abd9e9', '#2c7bb6'],
      5: ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'],
      6: ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'],
-     7: [
-       '#d73027',
-       '#fc8d59',
-       '#fee090',
-       '#ffffbf',
-       '#e0f3f8',
-       '#91bfdb',
-       '#4575b4'
-     ],
-     8: [
-       '#d73027',
-       '#f46d43',
-       '#fdae61',
-       '#fee090',
-       '#e0f3f8',
-       '#abd9e9',
-       '#74add1',
-       '#4575b4'
-     ],
+     7: ['#d73027', '#fc8d59', '#fee090', '#ffffbf', '#e0f3f8', '#91bfdb', '#4575b4'],
+     8: ['#d73027', '#f46d43', '#fdae61', '#fee090', '#e0f3f8', '#abd9e9','#74add1','#4575b4'],
      9: [
        '#d73027',
        '#f46d43',
@@ -209,5 +193,69 @@ fetch(url)
       const legendColors = colorbrewer.RdYlBu[11].reverse();
       const legendWidth = 400;
       const legendHeight = 300 / legendColors.length;
-           
+
+      const variance = data.monthlyVariance.map( val => val.variance);
+      const minTemp = data.baseTemperature + Math.min.apply(null, variance);
+      const maxTemp = data.baseTemperature + Math.max.apply(null, variance);
+
+      const legendThreshold = d3
+                        .scaleThreshold()
+                        .domain((function(min, max, count){
+                          let array = [];
+                          const step = (max - min) / count;
+                          const base = min;
+                          for (let i = 1; i < count; i++){
+                            array.push(base + i * step);
+                          }
+                          return array;
+                        })(minTemp, maxTemp, legendColors.length))
+                        .range(legendColors);
+
+      const legendX = d3
+                        .scaleLinear()
+                        .domain([minTemp, maxTemp])
+                        .range([0, legendWidth]);
+
+      const legendXAxis = d3
+                        .axisBottom()
+                        .scale(legendX)
+                        .tickSize(10,0)
+                        .tickValues(legendThreshold.domain())
+                        .tickFormat(d3.format('.1f'));
+
+      const legend = svg
+                        .append('g')
+                        .classed('legend',true)
+                        .attr('id','legend')
+                        .attr('transform',`translate(${marginLeft},${height})`)
+
+      legend.append('g')
+            .selectAll('rect')
+            .data(
+              legendThreshold.range().map( color => {
+                const d = legendThreshold.invertExtent(color);
+                if (d[0] === null) {
+                  d[0] = legendX.domain()[0];
+                }
+                if (d[1] === null) {
+                  d[1] = legendX.domain()[1];
+                }
+                return d;
+              })
+            )
+            .enter()
+            .append('rect')
+            .style('fill', d => legendThreshold(d[0]))
+            .attr('x', d => legendX(d[0]))
+            .attr('y', 0)
+            .attr('width', d => 
+              d[0] && d[1] ? legendX(d[1]) - legendX(d[0]) : legendX(null)
+            )
+            .attr('height', legendHeight)
+
+      legend
+            .append('g')
+            .call(legendXAxis)
+            .attr('transform',`translate(0,${legendHeight})`)
+
     }).catch(err => console.log(err));
