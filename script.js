@@ -1,4 +1,3 @@
-
 const url ='https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json'
 
 const colorbrewer = {
@@ -270,8 +269,12 @@ fetch(url)
       const tooltip = d3.select('.container')
                         .append('div')
                         .attr('id','tooltip')
-                        .style('opacity',0);                        
-      
+                        .style('opacity',0);
+      const overlay = d3.select('.container')
+                        .append('div')
+                        .attr('class','overlay')
+                        .style('opacity',0)
+     
       //Heat Map
       svg
             .append('g')
@@ -282,6 +285,7 @@ fetch(url)
             .enter()
             .append('rect')
             .attr('class','cell')
+            .attr('index', (d,i) => i)
             .attr('data-month', d => d.month)
             .attr('data-year', d => d.year)
             .attr('data-temp', d => d.baseTemperature + d.variance)
@@ -291,6 +295,7 @@ fetch(url)
             .attr('height', d => yScale.bandwidth(d.month))
             .attr('fill', d => legendThreshold(data.baseTemperature + d.variance))
             .on('mouseover', (event, d) => {
+              const i = event.currentTarget.style;
               tooltip.style('opacity', 0.9);
               tooltip.attr('data-month', d.month)
               tooltip.attr('data-year', d.year)
@@ -310,16 +315,18 @@ fetch(url)
               tooltip.style('left', event.pageX + 10 + 'px')
               tooltip.style('top', event.pageY - 60 + 'px')
               // Change stroke to black
-              // d3.select(this)
-              //   .style('stroke','black')
-              //   .style('stroke-width', '2px')
+              d3.select(event.currentTarget)
+                .style('stroke','black')
+                .style('stroke-width', '2px')
+              
             })
-            .on('mouseout', () => {
+            .on('mouseout', (event) => {
               tooltip.style('opacity', 0);
               //Reset stroke
-              // d3.select(this)
-              //   .style('stroke','none')
-              //   .style('stroke-width','0px')
+              d3.select(event.currentTarget)
+                .style('stroke','none')
+                .style('stroke-width','0px')
+              overlay.style('opacity',0);
             })
 
     }).catch(err => console.log(err));
